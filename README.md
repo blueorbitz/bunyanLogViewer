@@ -1,7 +1,7 @@
 # bunyanLogViewer
 To view bunyan log file in a proper view.
 
-[Screenshot](screenshot.png)
+![Screenshot](screenshot.png)
 
 Simply copy the HTML file to anywhere that need to use for viewing.
 Open in any browser and start to analyse the log file.
