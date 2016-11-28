@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- Latest compiled mithril js -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/mithril/0.2.5/mithril.min.js"></script>
+
+<!-- Latest compiled dataTable -->
+<link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css"></style>
+<script type="text/javascript" src="http://cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
+
+</head>
+<body>
+
+<script>
+//app goes here
+const forms = {
+  controller: function() {
+    const ctrl = this;
+    ctrl.data = m.prop([]);
+    ctrl.fileError = m.prop('');
+
+    this.onfile = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          ctrl.data([]); // reset table
+          const contents = e.target.result;
+          const lines = contents.split('\n');
+          for (const i in lines)
+            if (lines[i].trim())
+              ctrl.data().push(JSON.parse(lines[i].trim()));
+          m.redraw();
+        };
+        reader.readAsText(file);
+      } else
+        ctrl.fileError('Fail to load file');
+    };
+
+    this.tableConfig = function(element, isInitialized, context) {
+      //don't redraw if we did once already
+      if (isInitialized) return;
+      $(element).dataTable();
+    }
+  },
+  view: function(ctrl) {
+    return m('div', [
+      m('input', { type: 'file', onchange: ctrl.onfile }),
+      m('p.text-error', ctrl.fileError()),
+
+      ctrl.data().length == 0 ? '' :
+      m('table.table', { config: ctrl.tableConfig }, [
+        m('thead', m('tr', [
+          Object.keys(ctrl.data()[0]).map(function(n) {
+            return m('th', n);
+          }),
+        ])),
+        m('tbody', ctrl.data().map(function(n) {
+          var color = '';
+          switch (parseInt(n.level)) {
+            case 60: color = '.danger'; break; // fatal
+            case 50: color = '.danger'; break; // error
+            case 40: color = '.warning'; break; // warning
+            case 30: color = '.info'; break; // info
+            case 20: color = '.success'; break; // debug
+            case 10: color = '.success'; break; // trace
+          }
+          return m('tr' + color, Object.keys(n).map(function(o) {
+            var attrs = { style: 'max-width: 500px;' };
+            return m('td', attrs, n[o]);
+          }));
+        })),
+      ]),
+    ]);
+  },
+};
+
+m.render(document.body, [
+  m('#content.container', {style: {paddingTop: '10px', paddingBottom: '5px'}}),
+]);
+m.mount(document.getElementById('content'), forms);
+</script>
+</body>
+</html>
