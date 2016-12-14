@@ -77,7 +77,10 @@ const forms = {
           }
           return m('tr' + color, Object.keys(n).map(function(o) {
             var attrs = { style: 'max-width: 500px;' };
-            return m('td', attrs, n[o]);
+            if (typeof n[o] === 'object')
+              return m('td', attrs, m('pre', JSON.stringify(n[o], null, 2)));
+            else
+              return m('td', attrs, n[o]);
           }));
         })),
       ]),
